@@ -33,7 +33,228 @@ void Network::loadDB(string filename){
         getline(file, phone);
         getline(file, email);
         
-        // Try to read new fields if they exist
+        if (opt==1){
+            // Save the network database
+            cout << "Saving network database \n";
+            cout << "Enter the name of the save file: ";
+            getline(cin, fileName);
+            ofstream check(fileName);
+            if (check.is_open()) {
+                check.close();
+                saveDB(fileName);
+                cout << "Network saved in " << fileName << endl;
+            } 		
+            else {
+                cout << "Could not open the file: " << fileName << endl;
+            }
+        }
+        else if (opt==2){
+            // Load the network database
+            Person* current = head;
+            while (current != nullptr){
+                Person* temp = current;
+                current = current->next;
+                delete temp;
+            }
+            head = nullptr;
+            tail = nullptr;
+            count = 0;
+            
+            cout << "Loading network database \n";
+            // List available text files
+            system("ls > file_list.txt");
+            ifstream infile("file_list.txt");
+            regex match(".+\\.txt$");
+            string file;
+            while (getline(infile, file)){
+                if (file == "file_list.txt"){
+                    continue;
+                }
+                if (regex_match(file, match)){
+                    cout << file << endl;  
+                }
+            }
+            system("rm file_list.txt");
+            infile.close();
+            
+            string filename;
+            cout << "Enter the name of the load file: "; 
+            cin >> filename;
+            
+            if (!(ifstream(filename))){
+                cout << "File " << filename << " does not exist!" << endl;
+            }
+            else{
+                loadDB(filename);
+                cout << "Network loaded from " << filename << " with " << count << " people \n";
+            }
+        }
+        else if (opt == 3){
+            // Add a new person
+            cout << "Adding a new person \n";
+
+            Person* newp = new Person();
+
+            Person* exists = search(newp);
+            if (exists != NULL){
+                delete newp;
+            }
+            else {
+                push_front(newp); 
+            }
+        }
+        else if (opt == 4){
+            // Remove a person
+            string fi_name, la_name;
+            cout << "Enter the first name to remove: " << endl;
+            getline(cin, fi_name);
+            cout << "Enter the last name to remove: " << endl;
+            getline(cin, la_name);
+            bool result = remove(fi_name, la_name);
+            if (result){
+                cout << "Remove Successful! \n";
+                cout << "Removing a person \n";
+                cout << "First name: " << fi_name << endl;
+                cout << "Last name: " << la_name << endl;
+            }
+            else{
+                cout << "Person not found! \n";
+            }
+        }
+        else if (opt==5){
+            // Print people with last name
+            cout << "Print people with last name \n";
+            cout << "Last name: ";
+            string la_name1;
+            getline(cin, la_name1);
+
+            bool found = false;
+            Person* traverse = head;
+            while(traverse != NULL){
+                if (traverse->l_name == la_name1){
+                    cout << traverse->f_name << endl;
+                    cout << traverse->l_name << endl;
+                    cout << traverse->birthdate->get_month() << "/" << traverse->birthdate->get_day() << "/" << traverse->birthdate->get_year() << endl;
+                    cout << traverse->email->get_contact() << endl;
+                    cout << traverse->phone->get_contact() << endl;
+                    cout << "--------------------" << endl;
+                    found = true;
+                }
+                traverse = traverse->next;
+            }
+            if (found == false)
+                cout << "Person not found! \n";
+        }
+        else if (opt==6){
+            // Connect people as friends
+            cout << "Make friends:\n";
+            cout << "Person 1\n";
+            cout << "First Name: ";
+            string first, last;
+            getline(cin, first);
+            cout << "Last Name: ";
+            getline(cin, last);
+            Person* Person1 = search(first, last);
+            if (Person1){
+                cout << "Person 2\n";
+                cout << "First Name: ";
+                getline(cin, first);
+                cout << "Last Name: ";
+                getline(cin, last);
+                Person* Person2 = search(first, last);
+                if (Person2){
+                    cout << endl << Person1->l_name << ", " << Person1->f_name << endl;
+                    cout << Person1->birthdate->get_month_name() << " " << Person1->birthdate->get_day() << ", " << Person1->birthdate->get_year() << endl;
+                    cout << "Phone " << Person1->phone->get_contact() << endl;
+                    cout << "Email " << Person1->email->get_contact() << endl;
+                    cout << endl;
+                    cout << endl << Person2->l_name << ", " << Person2->f_name << endl;
+                    cout << Person2->birthdate->get_month_name() << " " << Person2->birthdate->get_day() << ", " << Person2->birthdate->get_year() << endl;
+                    cout << "Phone " << Person2->phone->get_contact() << endl;
+                    cout << "Email " << Person2->email->get_contact() << endl;
+                    Person1->makeFriend(Person2);
+                    Person2->makeFriend(Person1);
+                }
+                else{
+                    cout << endl << "Person not found\n";
+                }
+            }
+            else{
+                cout << endl << "Person not found\n";
+            }
+        }
+        else if (opt==7){
+            // Smart search
+            cout << "Smart Search\n";
+            cout << "Enter search term (name, phone, email, etc.): ";
+            string query;
+            getline(cin, query);
+            
+            vector<Person*> results = wiseSearch(query);
+            
+            if (results.empty()) {
+                cout << "No results found for \"" << query << "\"" << endl;
+            } else {
+                cout << "Found " << results.size() << " results for \"" << query << "\":" << endl;
+                cout << "-----------------------------------------" << endl;
+                
+                for (Person* p : results) {
+                    p->print_person();
+                    cout << "-----------------------------------------" << endl;
+                }
+            }
+        }
+        else if (opt==8){
+            // Recommendations
+            cout << "Get Recommendations\n";
+            cout << "Enter the person's information:\n";
+            cout << "First Name: ";
+            string first, last;
+            getline(cin, first);
+            cout << "Last Name: ";
+            getline(cin, last);
+            
+            Person* person = search(first, last);
+            if (!person) {
+                cout << "Person not found!" << endl;
+            } else {
+                cout << "Recommendation options:\n";
+                cout << "1. By shared interests\n";
+                cout << "2. By same college\n";
+                cout << "Enter option (1-2): ";
+                
+                int rec_opt;
+                cin >> rec_opt;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                
+                vector<Person*> recommendations;
+                
+                if (rec_opt == 1) {
+                    recommendations = recommendByInterests(person);
+                    cout << "\nPeople with shared interests:\n";
+                } else if (rec_opt == 2) {
+                    recommendations = recommendByCollege(person);
+                    cout << "\nPeople from the same college (" << person->get_college() << "):\n";
+                } else {
+                    cout << "Invalid option!" << endl;
+                    continue;
+                }
+                
+                if (recommendations.empty()) {
+                    cout << "No recommendations found." << endl;
+                } else {
+                    cout << "-----------------------------------------" << endl;
+                    for (Person* p : recommendations) {
+                        p->print_person();
+                        cout << "-----------------------------------------" << endl;
+                    }
+                }
+            }
+        }
+        else {
+            cout << "Nothing matched!\n";
+        }
+         Try to read new fields if they exist
         college = "";
         major = "";
         interests = "";
