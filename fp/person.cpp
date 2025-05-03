@@ -1,8 +1,8 @@
-
 #include "person.h"
 #include "misc.h"
 #include <iostream>
 #include <utility>
+#include <sstream>
 using namespace std;
 
 Person::Person(){
@@ -15,12 +15,11 @@ Person::~Person(){
     delete birthdate;
     delete email;
     delete phone;
-    // TODO: complete the method!
+    // Fields like college, major, interests will be handled automatically
 }
 
 Person::Person(string f_name, string l_name, string birthdate, string email, string phone){
-    // TODO: Complete this method!
-    // phone and email strings are in full version
+    // Existing constructor
     string type;
     this->f_name = f_name;
     this->l_name = l_name;
@@ -41,6 +40,24 @@ Person::Person(string f_name, string l_name, string birthdate, string email, str
         }
     }
     this->phone = new Phone(type, phone);
+    
+    // Initialize new fields with default values
+    this->college = "";
+    this->major = "";
+    // interests vector is already empty by default
+}
+
+// New constructor with additional parameters
+Person::Person(string f_name, string l_name, string birthdate, string email, string phone,
+       string college, string major, const vector<string>& interests){
+    
+    // Reuse existing constructor initialization
+    Person(f_name, l_name, birthdate, email, phone);
+    
+    // Set the new fields
+    this->college = college;
+    this->major = major;
+    this->interests = interests;
 }
 
 Person::Person(string filename){
@@ -53,8 +70,6 @@ void Person::set_person(){
     // first/last name can have spaces!
     // date format must be "M/D/YYYY"
     // We are sure user enters info in correct format.
-    // TODO: complete this method!
-    
     
     string temp;
     string type;
@@ -72,22 +87,44 @@ void Person::set_person(){
     birthdate = new Date(temp); 
 
     cout << "Type of email address: ";
-    // code here
     getline(cin, type);
     
     cout << "Email address: ";
-    // code here
     getline(cin, temp);
     email = new Email(type, temp);
 
     cout << "Type of phone number: ";
-    // code here
     getline(cin, type);
     cout << "Phone number: ";
-    // code here
-    // code here
     getline(cin, temp);
     phone = new Phone(type, temp);
+    
+    // Prompt for new information
+    cout << "College (leave blank if none): ";
+    getline(cin, college);
+    
+    cout << "Major (leave blank if none): ";
+    getline(cin, major);
+    
+    cout << "Interests (comma separated, leave blank if none): ";
+    string interests_str;
+    getline(cin, interests_str);
+    
+    // Parse interests from comma-separated string
+    interests.clear();
+    stringstream ss(interests_str);
+    string interest;
+    while(getline(ss, interest, ',')) {
+        // Trim leading/trailing spaces
+        size_t start = interest.find_first_not_of(" \t");
+        size_t end = interest.find_last_not_of(" \t");
+        if (start != string::npos && end != string::npos) {
+            interest = interest.substr(start, end - start + 1);
+            if (!interest.empty()) {
+                interests.push_back(interest);
+            }
+        }
+    }
 }
 
 
@@ -95,7 +132,6 @@ void Person::set_person(string filename){
     // reads a Person from a file
     // Look at person_template files as examples.     
     // Phone number in files can have '-' or not.
-    // TODO: Complete this method!
     ifstream infile(filename);
     if (!infile.is_open()){
         cerr << "Error opening file!" << endl;
@@ -127,11 +163,39 @@ void Person::set_person(string filename){
         }
     }
     email = new Email(type, mymail);
+    
+    // Try to read new fields if they exist in the file
+    college = "";
+    major = "";
+    interests.clear();
+    
+    // Read college if available
+    if (getline(infile, fileline) && fileline.compare(0, 20, "--------------------") != 0) {
+        college = fileline;
+        
+        // Read major if available
+        if (getline(infile, fileline) && fileline.compare(0, 20, "--------------------") != 0) {
+            major = fileline;
+            
+            // Read interests if available
+            if (getline(infile, fileline) && fileline.compare(0, 20, "--------------------") != 0) {
+                stringstream ss(fileline);
+                string interest;
+                while(getline(ss, interest, ',')) {
+                    // Trim leading/trailing spaces
+                    size_t start = interest.find_first_not_of(" \t");
+                    size_t end = interest.find_last_not_of(" \t");
+                    if (start != string::npos && end != string::npos) {
+                        interest = interest.substr(start, end - start + 1);
+                        if (!interest.empty()) {
+                            interests.push_back(interest);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
-   
-
-
-
 
 bool Person::operator==(const Person& rhs){
     // TODO: Complete this method!
@@ -147,14 +211,34 @@ bool Person::operator!=(const Person& rhs){
 
 
 void Person::print_person(){
-    // Already implemented for you! Do not change!
+    // Modified to include new fields
     cout << l_name <<", " << f_name << endl;
     birthdate->print_date("Month D, YYYY");
     cout << "Phone ";
     phone->print();
     cout << "Email ";
     email->print();
-    for (int i = 0; i<myfriends.size(); i++){
+    
+    // Print new fields if they're not empty
+    if (!college.empty()) {
+        cout << "College: " << college << endl;
+    }
+    if (!major.empty()) {
+        cout << "Major: " << major << endl;
+    }
+    if (!interests.empty()) {
+        cout << "Interests: ";
+        for (size_t i = 0; i < interests.size(); i++) {
+            cout << interests[i];
+            if (i < interests.size() - 1) {
+                cout << ", ";
+            }
+        }
+        cout << endl;
+    }
+    
+    // Print friends
+    for (int i = 0; i < myfriends.size(); i++){
         cout << codeName(myfriends[i]->f_name, myfriends[i]->l_name) << " (" << myfriends[i]->f_name << " " << myfriends[i]->l_name << ")" << endl;
     }
 }
@@ -187,7 +271,6 @@ void Person::print_friends (){
             person_and_code[current_min] = person_and_code[i];
             person_and_code[i] = temp;
         }
-
     }
 
     cout << f_name << ", " << l_name << endl;
@@ -196,5 +279,4 @@ void Person::print_friends (){
     for (int i =0; i<person_and_code.size(); i++){
         cout << person_and_code[i].second->f_name << ", " << person_and_code[i].second->l_name << endl;
     }
-
 }
