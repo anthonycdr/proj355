@@ -83,10 +83,9 @@ void Network::loadDB(string filename){
         return;
     }
 
-    string fname, lname, bdate, email, phone, college, major, interests; 
+    string fname, lname, bdate, email, phone; // Assuming these are the fields
     string buff;
-    vector<vector<pair<string, string>>> People_friend_list; 
-    
+    vector<vector<pair<string, string>>> People_friend_list; //since cant add the friends vector unless each Person is first initialized into network
     while (getline(file, fname)) {
         vector <pair<string,string>> temp;
         string divider;
@@ -95,39 +94,7 @@ void Network::loadDB(string filename){
         getline(file, phone);
 	    getline(file, email);
     
-        // Try to read new fields if they exist
-        college = "";
-        major = "";
-        interests = "";
-        
-        // We'll read lines until we hit the divider or friends section
-        if (getline(file, buff) && buff.compare(0, 20, "--------------------") != 0) {
-            // This is either college or a friend entry
-            if (buff.find(',') == string::npos && buff.find('(') == string::npos) {
-                // This is likely the college field
-                college = buff;
-                
-                // Try to read major
-                if (getline(file, buff) && buff.compare(0, 20, "--------------------") != 0) {
-                    if (buff.find(',') == string::npos && buff.find('(') == string::npos) {
-                        // This is likely the major field
-                        major = buff;
-                        
-                        // Try to read interests
-                        if (getline(file, buff) && buff.compare(0, 20, "--------------------") != 0) {
-                            if (buff.find(',') != string::npos && buff.find('(') == string::npos) {
-                                // This is likely the interests field
-                                interests = buff;
-                                getline(file, buff); // Get the next line after interests
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Process any remaining lines as friends until we hit the divider
-        while (buff.compare(0, 20, "--------------------") != 0) {
+        while (getline(file, buff) && buff.compare(0,20, "--------------------") != 0){
             int index = 0;
             for (int i =0; i< buff.length(); i++){
                 if (buff[i] == ','){
@@ -138,43 +105,12 @@ void Network::loadDB(string filename){
             string friend_first = buff.substr(0,index);
             string friend_last = buff.substr(index+1);
             temp.push_back({friend_first, friend_last});
-            
-            if (!getline(file, buff)) {
-                break;
-            }
         }
-        
         Person* newPerson = new Person(fname, lname, bdate, email, phone);
-        
-        // Set the additional fields if your Person class has these methods
-        // Comment these out if you haven't modified the Person class yet
-        /*
-        newPerson->set_college(college);
-        newPerson->set_major(major);
-        
-        // Parse interests if any
-        if (!interests.empty()) {
-            stringstream ss(interests);
-            string interest;
-            while (getline(ss, interest, ',')) {
-                // Trim leading/trailing spaces
-                size_t start = interest.find_first_not_of(" \t");
-                size_t end = interest.find_last_not_of(" \t");
-                if (start != string::npos && end != string::npos) {
-                    interest = interest.substr(start, end - start + 1);
-                    if (!interest.empty()) {
-                        newPerson->add_interest(interest);
-                    }
-                }
-            }
-        }
-        */
-        
         People_friend_list.push_back(temp);
         push_back(newPerson); // Add person to the network
     }
     file.close();
-    
     Person* traverse = head;
     for (int i = 0; i<People_friend_list.size(); i++){
         vector <Person*> friends_vector;
@@ -186,7 +122,7 @@ void Network::loadDB(string filename){
         }
         traverse->myfriends = friends_vector;
         traverse = traverse->next;    
-    }
+        }     
 }
 
 void Network::saveDB(string filename) {
@@ -203,33 +139,15 @@ void Network::saveDB(string filename) {
              << ptr->birthdate->get_day() << "/"
              << ptr->birthdate->get_year() << endl;
 
-        file << ptr->phone->get_contact("full") << endl;
+	    file << ptr->phone->get_contact("full") << endl;
         file << ptr->email->get_contact("full") << endl;
-        
-        /* Uncomment this if you've added these fields to your Person class
-        // Save new fields if they're not empty
-        if (!ptr->get_college().empty()) {
-            file << ptr->get_college() << endl;
-        }
-        if (!ptr->get_major().empty()) {
-            file << ptr->get_major() << endl;
-        }
-        if (!ptr->get_interests().empty()) {
-            for (size_t i = 0; i < ptr->get_interests().size(); i++) {
-                file << ptr->get_interests()[i];
-                if (i < ptr->get_interests().size() - 1) {
-                    file << ", ";
-                }
-            }
-            file << endl;
-        }
-        */
 
         for (int i = 0; i<ptr->myfriends.size(); i++){
             file << codeName(ptr->myfriends[i]->f_name, ptr->myfriends[i]->l_name) << " (" << ptr->myfriends[i]->f_name << " " << ptr->myfriends[i]->l_name << ")" << endl;
         }
 
         file << "--------------------" << endl;
+
         ptr = ptr->next;
     }
 
@@ -283,6 +201,7 @@ void Network::push_back(Person* newEntry){
 } 
 
 
+
 bool Network::remove(string fname, string lname){
     // TODO: Complete this method
     Person* traverse = head;
@@ -306,6 +225,7 @@ bool Network::remove(string fname, string lname){
         individual = individual->next;
     }
 
+
     if (traverse -> next == nullptr){ //deleting last element
         if (traverse -> prev == nullptr){ //if only one elem
             head = nullptr;
@@ -328,6 +248,7 @@ bool Network::remove(string fname, string lname){
     (traverse -> next)-> prev = traverse -> prev;
     delete traverse;
     return true;
+
 }
 
 // Define the wise search function
@@ -338,8 +259,6 @@ vector<Person*> Network::wiseSearch(string query) {
     
     Person* ptr = head;
     while (ptr != NULL) {
-        bool found = false;
-        
         // Check first name
         string fname_lower = ptr->f_name;
         transform(fname_lower.begin(), fname_lower.end(), fname_lower.begin(), ::tolower);
@@ -358,9 +277,15 @@ vector<Person*> Network::wiseSearch(string query) {
             continue;
         }
         
-        // Check birthdate
-        string birth_year = to_string(ptr->birthdate->get_year());
-        if (birth_year.find(query) != string::npos) {
+        // Check phone (remove dashes for comparison)
+        string phone = ptr->phone->get_contact("brief");
+        string phone_clean;
+        for (char c : phone) {
+            if (c != '-') {
+                phone_clean += c;
+            }
+        }
+        if (phone_clean.find(query) != string::npos || phone.find(query) != string::npos) {
             results.push_back(ptr);
             ptr = ptr->next;
             continue;
@@ -375,9 +300,9 @@ vector<Person*> Network::wiseSearch(string query) {
             continue;
         }
         
-        // Check phone
-        string phone = ptr->phone->get_contact("brief");
-        if (phone.find(query) != string::npos) {
+        // Check birth year
+        string birth_year = to_string(ptr->birthdate->get_year());
+        if (birth_year.find(query) != string::npos) {
             results.push_back(ptr);
             ptr = ptr->next;
             continue;
@@ -388,6 +313,7 @@ vector<Person*> Network::wiseSearch(string query) {
     
     return results;
 }
+
 
 void Network::showMenu(){
     // TODO: Complete this method!
@@ -406,7 +332,7 @@ void Network::showMenu(){
         cout << "4. Remove a person \n";
         cout << "5. Print people with last name  \n";
         cout << "6. Connect \n";
-        cout << "7. Smart search \n"; // New menu option
+        cout << "7. Smart search \n";  // New menu option
         cout << "\nSelect an option ... ";
         
         if (cin >> opt) {
@@ -437,10 +363,10 @@ void Network::showMenu(){
             	check.close();
                 saveDB(fileName);
     		cout << "Network saved in " << fileName << endl;
-            } 		
-	        else {
+} 		
+	     else {
     		 cout << "Could not open the file: " << fileName << endl;
-	        }
+	}
            
         }
         else if (opt==2){
@@ -587,6 +513,8 @@ void Network::showMenu(){
             else{
                 cout << endl<<"Person not found\n";
             }
+
+
         }
         else if (opt==7){
             // Smart search - new option
@@ -619,4 +547,11 @@ void Network::showMenu(){
         std::getline (std::cin, temp);
         cout << "\033[2J\033[1;1H";
     }
+}
+
+// Add the main function at the end of this file
+int main() {
+    Network myNetwork;
+    myNetwork.showMenu();
+    return 0;
 }
