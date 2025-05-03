@@ -1,50 +1,56 @@
+#ifndef PERSON_H
+#define PERSON_H
 
-#ifndef CONTACT_H
-#define CONTACT_H
-
-#include <iostream>
+#include "date.h"
+#include "contact.h"
+#include "fstream"
 #include <string>
-// TODO: You may need to add other libraries here!
+#include <vector>
 
+class Person{
+    friend class Network;
 
-/* 
-Class attribute:
-type would return the name you want to give to this contact. "Work", "Home" and "Office"
-get_contact would return the string of email/ phone 
-set_contact would prompt the user to enter their contact 
-example print() output:
-    Email::print() example: "Email (Work): julia@wh.com"
-    Phone::print() example: "Phone (Home): 310-192-2011"
-*/
-class Contact {
-protected:
-	std::string type;        
-public:
-	virtual void print() = 0;
-    virtual std::string get_contact(std::string style="full") = 0;
-	virtual void set_contact() = 0;
-};
-
-class Email: public Contact{
 private:
-    std::string email_addr;
-    //other attributes
-public:
-    Email(std::string type, std::string email_addr);  
-    void print() override;                  
-    std::string get_contact(std::string style = "full") override; 
-    void set_contact() override;
-};  
+    std::string f_name;
+    std::string l_name;
+    Date *birthdate;
+    Email *email;
+    Phone *phone;
+    // New additional information
+    std::string college;
+    std::string major;
+    std::vector<std::string> interests;
+    // the following to attributes are used in the linked list.
+    Person* next;
+    Person* prev;
+    std::vector<Person*> myfriends;
 
-class Phone: public Contact{
-private:
-    std::string phone_num;
-    //other attributes 
-public:
-    Phone(std::string type, std::string phone_number);  
-    void print() override;                   
-    std::string get_contact(std::string style = "full") override; 
-    void set_contact() override;        
+public: 
+    Person();
+    ~Person();
+    Person(std::string filename);
+    Person(std::string f_name, std::string l_name, std::string birthdate, std::string email, std::string phone);
+    // New constructor with additional parameters
+    Person(std::string f_name, std::string l_name, std::string birthdate, std::string email, std::string phone,
+           std::string college, std::string major, const std::vector<std::string>& interests);
+    void print_person();
+    void set_person();
+    void set_person(std::string filename);
+    bool operator==(const Person& rhs);
+    bool operator!=(const Person& rhs);
+    void makeFriend(Person* newfriend);
+    void print_friends();
+    
+    // Getters for new fields
+    std::string get_college() const { return college; }
+    std::string get_major() const { return major; }
+    const std::vector<std::string>& get_interests() const { return interests; }
+    
+    // Setters for new fields
+    void set_college(const std::string& college) { this->college = college; }
+    void set_major(const std::string& major) { this->major = major; }
+    void add_interest(const std::string& interest) { interests.push_back(interest); }
+    void set_interests(const std::vector<std::string>& interests) { this->interests = interests; }
 };
 
 #endif
