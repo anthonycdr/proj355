@@ -77,7 +77,7 @@ void Phone::print(){
 	cout << get_contact() << endl;
 }
 
-// Implementation for College Contact
+// Implementation for College Contact - Fixed constructor signature
 College::College(string college_name){
     this->type = "College";
     this->college_name = college_name;
@@ -100,7 +100,7 @@ void College::print(){
 	cout << "College: " << get_contact() << endl;
 }
 
-// Implementation for Major Contact
+// Implementation for Major Contact - Fixed constructor signature
 Major::Major(string major_name){
     this->type = "Major";
     this->major_name = major_name;
@@ -123,7 +123,7 @@ void Major::print(){
 	cout << "Major: " << get_contact() << endl;
 }
 
-// Implementation for State Contact
+// Implementation for State Contact - Fixed constructor signature
 State::State(string state_code){
     this->type = "State";
     this->state_code = state_code;
