@@ -29,10 +29,8 @@ class Network{
         bool remove(std::string fname, std::string lname);
         void showMenu();
         
-        // New methods for Phase 3
+        // New method for Phase 3 extra credit
         std::vector<Person*> wiseSearch(std::string query);
-        std::vector<Person*> recommendByInterests(Person* person);
-        std::vector<Person*> recommendByCollege(Person* person);
 };
 
 #endif
