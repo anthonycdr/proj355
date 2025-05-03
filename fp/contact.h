@@ -51,8 +51,8 @@ class College: public Contact{
 private:
     std::string college_name;
 public:
-    College(std::string college_name);  
-    College() { college_name = ""; }
+    College(std::string college_name); // Fixed constructor signature  
+    College() { college_name = ""; type = "College"; }
     void print() override;                  
     std::string get_contact(std::string style = "full") override; 
     void set_contact() override;
@@ -62,8 +62,8 @@ class Major: public Contact{
 private:
     std::string major_name;
 public:
-    Major(std::string major_name);  
-    Major() { major_name = ""; }
+    Major(std::string major_name); // Fixed constructor signature  
+    Major() { major_name = ""; type = "Major"; }
     void print() override;                  
     std::string get_contact(std::string style = "full") override; 
     void set_contact() override;
@@ -73,8 +73,8 @@ class State: public Contact{
 private:
     std::string state_code;
 public:
-    State(std::string state_code);  
-    State() { state_code = ""; }
+    State(std::string state_code); // Fixed constructor signature  
+    State() { state_code = ""; type = "State"; }
     void print() override;                  
     std::string get_contact(std::string style = "full") override; 
     void set_contact() override;
