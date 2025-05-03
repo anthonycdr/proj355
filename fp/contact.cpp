@@ -100,7 +100,6 @@ void College::print(){
 	cout << "College: " << get_contact() << endl;
 }
 
-// Implementation for Major Contact - Fixed constructor signature
 Major::Major(string major_name){
     this->type = "Major";
     this->major_name = major_name;
@@ -108,7 +107,7 @@ Major::Major(string major_name){
 
 void Major::set_contact(){
     cout << "Enter major name: ";
-    cin.ignore(); // To handle previous newline
+    cin.ignore(); 
     getline(cin, major_name);
 }
 
@@ -123,7 +122,6 @@ void Major::print(){
 	cout << "Major: " << get_contact() << endl;
 }
 
-// Implementation for State Contact - Fixed constructor signature
 State::State(string state_code){
     this->type = "State";
     this->state_code = state_code;
