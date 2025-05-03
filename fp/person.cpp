@@ -9,6 +9,7 @@ Person::Person(){
     set_person();
 }
 
+
 Person::~Person(){
     delete birthdate;
     delete email;
@@ -16,6 +17,7 @@ Person::~Person(){
     delete college;
     delete major;
     delete state;
+    // TODO: complete the method!
 }
 
 Person::Person(string f_name, string l_name, string birthdate, string email, string phone){
@@ -25,7 +27,6 @@ Person::Person(string f_name, string l_name, string birthdate, string email, str
     this->f_name = f_name;
     this->l_name = l_name;
     this->birthdate = new Date(birthdate);
-    
     for(int i = 0; i < email.length(); i++){
         if(email[i] == ')'){
             type = email.substr(1, i-1);
@@ -34,7 +35,6 @@ Person::Person(string f_name, string l_name, string birthdate, string email, str
         }
     }
     this->email = new Email(type, email);
-    
     for(int i = 0; i < phone.length(); i++){
         if(phone[i] == ')'){
             type = phone.substr(1, i-1);
@@ -44,7 +44,7 @@ Person::Person(string f_name, string l_name, string birthdate, string email, str
     }
     this->phone = new Phone(type, phone);
     
-    // Initialize new fields with default objects
+    // Initialize new fields with empty values
     this->college = new College();
     this->major = new Major();
     this->state = new State();
@@ -52,7 +52,7 @@ Person::Person(string f_name, string l_name, string birthdate, string email, str
 
 // New constructor with additional fields
 Person::Person(string f_name, string l_name, string birthdate, string email, string phone,
-              string college_name, string major_name, string state_code) {
+               string college_name, string major_name, string state_code){
     string type;
     this->f_name = f_name;
     this->l_name = l_name;
@@ -77,78 +77,76 @@ Person::Person(string f_name, string l_name, string birthdate, string email, str
     this->phone = new Phone(type, phone);
     
     // Set the additional fields
-    this->college = new College("Attended", college_name);
-    this->major = new Major("Field", major_name);
-    this->state = new State("Residence", state_code);
+    this->college = new College(college_name);
+    this->major = new Major(major_name);
+    this->state = new State(state_code);
 }
 
 Person::Person(string filename){
     set_person(filename);
 }
 
+
 void Person::set_person(){
     // prompts for the information of the user from the terminal
     // first/last name can have spaces!
     // date format must be "M/D/YYYY"
     // We are sure user enters info in correct format.
+    // TODO: complete this method!
     
     string temp;
     string type;
 
     cout << "First Name: ";
-    getline(cin, f_name);
+    // pay attention to how we read first name, as it can have spaces!
+    getline(cin,f_name);
 
     cout << "Last Name: ";
-    getline(cin, l_name);
+    getline(cin,l_name);
 
     cout << "Birthdate (M/D/YYYY): ";
-    getline(cin, temp);
+    getline(cin,temp);
+    // pay attention to how we passed argument to the constructor of a new object created dynamically using new command
     birthdate = new Date(temp); 
 
     cout << "Type of email address: ";
+    // code here
     getline(cin, type);
     
     cout << "Email address: ";
+    // code here
     getline(cin, temp);
     email = new Email(type, temp);
 
     cout << "Type of phone number: ";
+    // code here
     getline(cin, type);
-    
     cout << "Phone number: ";
+    // code here
+    // code here
     getline(cin, temp);
     phone = new Phone(type, temp);
     
-    // Create and set new contact objects
+    // New prompts for additional fields
     college = new College();
-    cout << "College information (leave blank if none)\n";
-    if (cin.peek() != '\n') {
-        college->set_contact();
-    } else {
-        cin.ignore(); // Skip the newline
-    }
+    cout << "College: ";
+    college->set_contact();
     
     major = new Major();
-    cout << "Major information (leave blank if none)\n";
-    if (cin.peek() != '\n') {
-        major->set_contact();
-    } else {
-        cin.ignore(); // Skip the newline
-    }
+    cout << "Major: ";
+    major->set_contact();
     
     state = new State();
-    cout << "State information (leave blank if none)\n";
-    if (cin.peek() != '\n') {
-        state->set_contact();
-    } else {
-        cin.ignore(); // Skip the newline
-    }
+    cout << "State: ";
+    state->set_contact();
 }
+
 
 void Person::set_person(string filename){
     // reads a Person from a file
     // Look at person_template files as examples.     
     // Phone number in files can have '-' or not.
+    // TODO: Complete this method!
     ifstream infile(filename);
     if (!infile.is_open()){
         cerr << "Error opening file!" << endl;
@@ -190,18 +188,19 @@ void Person::set_person(string filename){
     while(getline(infile, fileline) && fileline.compare(0, 20, "--------------------") != 0) {
         if (fileline.find("College: ") == 0) {
             mycollege = fileline.substr(9); // Skip "College: "
-            college = new College("Attended", mycollege);
+            college = new College(mycollege);
         } 
         else if (fileline.find("Major: ") == 0) {
             mymajor = fileline.substr(7); // Skip "Major: "
-            major = new Major("Field", mymajor);
+            major = new Major(mymajor);
         } 
         else if (fileline.find("State: ") == 0) {
             mystate = fileline.substr(7); // Skip "State: "
-            state = new State("Residence", mystate);
+            state = new State(mystate);
         }
     }
 }
+   
 
 bool Person::operator==(const Person& rhs){
     // TODO: Complete this method!
@@ -215,8 +214,9 @@ bool Person::operator!=(const Person& rhs){
     return !(*this == rhs);
 }
 
+
 void Person::print_person(){
-    // Modified to include the new fields
+    // Already implemented for you! Do not change!
     cout << l_name <<", " << f_name << endl;
     birthdate->print_date("Month D, YYYY");
     cout << "Phone ";
@@ -226,15 +226,12 @@ void Person::print_person(){
     
     // Print additional fields if they are not empty
     if (college->get_contact("brief") != "") {
-        cout << "College ";
         college->print();
     }
     if (major->get_contact("brief") != "") {
-        cout << "Major ";
         major->print();
     }
     if (state->get_contact("brief") != "") {
-        cout << "State ";
         state->print();
     }
     
@@ -252,7 +249,7 @@ void Person::makeFriend(Person* newfriend){
     myfriends.push_back(newfriend);
 }
 
-void Person::print_friends(){
+void Person::print_friends (){
     vector<pair<string,Person*>> person_and_code;
     for (int i =0 ;i < myfriends.size(); i++){
         string individual_code = codeName (myfriends[i]->f_name, myfriends[i]->l_name);
@@ -271,6 +268,7 @@ void Person::print_friends(){
             person_and_code[current_min] = person_and_code[i];
             person_and_code[i] = temp;
         }
+
     }
 
     cout << f_name << ", " << l_name << endl;
