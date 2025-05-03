@@ -19,7 +19,7 @@ private:
     // New additional information
     std::string college;
     std::string major;
-    std::vector<std::string> interests;
+    std::string state;
     // the following to attributes are used in the linked list.
     Person* next;
     Person* prev;
@@ -30,9 +30,8 @@ public:
     ~Person();
     Person(std::string filename);
     Person(std::string f_name, std::string l_name, std::string birthdate, std::string email, std::string phone);
-    // New constructor with additional parameters
     Person(std::string f_name, std::string l_name, std::string birthdate, std::string email, std::string phone,
-           std::string college, std::string major, const std::vector<std::string>& interests);
+           std::string college, std::string major, std::string state);
     void print_person();
     void set_person();
     void set_person(std::string filename);
@@ -44,13 +43,12 @@ public:
     // Getters for new fields
     std::string get_college() const { return college; }
     std::string get_major() const { return major; }
-    const std::vector<std::string>& get_interests() const { return interests; }
+    std::string get_state() const { return state; }
     
     // Setters for new fields
     void set_college(const std::string& college) { this->college = college; }
     void set_major(const std::string& major) { this->major = major; }
-    void add_interest(const std::string& interest) { interests.push_back(interest); }
-    void set_interests(const std::vector<std::string>& interests) { this->interests = interests; }
+    void set_state(const std::string& state) { this->state = state; }
 };
 
 #endif
