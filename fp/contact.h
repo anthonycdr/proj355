@@ -46,38 +46,34 @@ public:
     void set_contact() override;        
 };
 
-// Simplified contact types for college, major, and state
 class College: public Contact{
 private:
     std::string college_name;
 public:
-    College(std::string college_name); // Fixed constructor signature  
-    College() { college_name = ""; type = "College"; }
-    void print() override;                  
+    College(std::string type, std::string college_name);  
+    void print() override;                   
     std::string get_contact(std::string style = "full") override; 
-    void set_contact() override;
+    void set_contact() override;        
 };
 
 class Major: public Contact{
 private:
     std::string major_name;
 public:
-    Major(std::string major_name); // Fixed constructor signature  
-    Major() { major_name = ""; type = "Major"; }
-    void print() override;                  
+    Major(std::string type, std::string major_name);  
+    void print() override;                   
     std::string get_contact(std::string style = "full") override; 
-    void set_contact() override;
+    void set_contact() override;        
 };
 
 class State: public Contact{
 private:
     std::string state_code;
 public:
-    State(std::string state_code); // Fixed constructor signature  
-    State() { state_code = ""; type = "State"; }
-    void print() override;                  
+    State(std::string type, std::string state_code);  
+    void print() override;                   
     std::string get_contact(std::string style = "full") override; 
-    void set_contact() override;
+    void set_contact() override;        
 };
 
 #endif
