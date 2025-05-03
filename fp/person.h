@@ -16,10 +16,10 @@ private:
     Date *birthdate;
     Email *email;
     Phone *phone;
-    // New additional information
-    std::string college;
-    std::string major;
-    std::string state;
+    // New contact types
+    College *college;
+    Major *major;
+    State *state;
     // the following to attributes are used in the linked list.
     Person* next;
     Person* prev;
@@ -39,16 +39,6 @@ public:
     bool operator!=(const Person& rhs);
     void makeFriend(Person* newfriend);
     void print_friends();
-    
-    // Getters for new fields
-    std::string get_college() const { return college; }
-    std::string get_major() const { return major; }
-    std::string get_state() const { return state; }
-    
-    // Setters for new fields
-    void set_college(const std::string& college) { this->college = college; }
-    void set_major(const std::string& major) { this->major = major; }
-    void set_state(const std::string& state) { this->state = state; }
 };
 
 #endif
