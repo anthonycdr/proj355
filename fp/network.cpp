@@ -76,53 +76,82 @@ Person* Network::search(string fname, string lname){
 
 
 void Network::loadDB(string filename){
-    // TODO: Complete this method
+    // Modified to handle additional fields
     std::ifstream file(filename);
     if (!file.is_open()) {
         cout << "Could not open the file!" << endl;
         return;
     }
 
-    string fname, lname, bdate, email, phone; // Assuming these are the fields
+    string fname, lname, bdate, email, phone;
     string buff;
-    vector<vector<pair<string, string>>> People_friend_list; //since cant add the friends vector unless each Person is first initialized into network
+    vector<vector<pair<string, string>>> People_friend_list;
+    
     while (getline(file, fname)) {
-        vector <pair<string,string>> temp;
-        string divider;
-        getline(file,lname);
+        vector<pair<string,string>> temp;
+        string college = "", major = "", state = "";
+        
+        getline(file, lname);
         getline(file, bdate);
         getline(file, phone);
-	    getline(file, email);
-    
-        while (getline(file, buff) && buff.compare(0,20, "--------------------") != 0){
-            int index = 0;
-            for (int i =0; i< buff.length(); i++){
-                if (buff[i] == ','){
-                    index = i;
-                    break;
+        getline(file, email);
+        
+        // Read lines until we find the divider "--------------------"
+        while (getline(file, buff) && buff.compare(0, 20, "--------------------") != 0) {
+            // Check if this is a college, major, or state line
+            if (buff.find("College: ") == 0) {
+                college = buff.substr(9); // Skip "College: "
+            } 
+            else if (buff.find("Major: ") == 0) {
+                major = buff.substr(7); // Skip "Major: "
+            } 
+            else if (buff.find("State: ") == 0) {
+                state = buff.substr(7); // Skip "State: "
+            } 
+            // Otherwise, it's a friend entry
+            else {
+                // Parse friends line
+                size_t openParen = buff.find('(');
+                size_t closeParen = buff.find(')');
+                
+                if (openParen != string::npos && closeParen != string::npos) {
+                    string fullname = buff.substr(openParen + 1, closeParen - openParen - 1);
+                    size_t spacePos = fullname.find(' ');
+                    
+                    if (spacePos != string::npos) {
+                        string friend_first = fullname.substr(0, spacePos);
+                        string friend_last = fullname.substr(spacePos + 1);
+                        temp.push_back({friend_first, friend_last});
+                    }
                 }
             }
-            string friend_first = buff.substr(0,index);
-            string friend_last = buff.substr(index+1);
-            temp.push_back({friend_first, friend_last});
         }
-        Person* newPerson = new Person(fname, lname, bdate, email, phone);
+        
+        // Create the person with additional fields
+        Person* newPerson = new Person(fname, lname, bdate, email, phone, 
+                                      college, major, state);
+        
         People_friend_list.push_back(temp);
-        push_back(newPerson); // Add person to the network
+        push_back(newPerson);
     }
+    
     file.close();
+    
+    // Connect friends
     Person* traverse = head;
-    for (int i = 0; i<People_friend_list.size(); i++){
-        vector <Person*> friends_vector;
-        for (int j = 0 ; j<People_friend_list[i].size(); j++){
-            Person* newFriend = search (People_friend_list[i][j].first, People_friend_list[i][j].second);
-            if (newFriend!=nullptr){
+    for (int i = 0; i < People_friend_list.size(); i++) {
+        vector<Person*> friends_vector;
+        
+        for (int j = 0; j < People_friend_list[i].size(); j++) {
+            Person* newFriend = search(People_friend_list[i][j].first, People_friend_list[i][j].second);
+            if (newFriend != nullptr) {
                 friends_vector.push_back(newFriend);
             }
         }
+        
         traverse->myfriends = friends_vector;
-        traverse = traverse->next;    
-        }     
+        traverse = traverse->next;
+    }
 }
 
 void Network::saveDB(string filename) {
@@ -139,15 +168,27 @@ void Network::saveDB(string filename) {
              << ptr->birthdate->get_day() << "/"
              << ptr->birthdate->get_year() << endl;
 
-	    file << ptr->phone->get_contact("full") << endl;
+        file << ptr->phone->get_contact("full") << endl;
         file << ptr->email->get_contact("full") << endl;
+        
+        // Save the additional fields if not empty
+        if (!ptr->get_college().empty()) {
+            file << "College: " << ptr->get_college() << endl;
+        }
+        if (!ptr->get_major().empty()) {
+            file << "Major: " << ptr->get_major() << endl;
+        }
+        if (!ptr->get_state().empty()) {
+            file << "State: " << ptr->get_state() << endl;
+        }
 
-        for (int i = 0; i<ptr->myfriends.size(); i++){
-            file << codeName(ptr->myfriends[i]->f_name, ptr->myfriends[i]->l_name) << " (" << ptr->myfriends[i]->f_name << " " << ptr->myfriends[i]->l_name << ")" << endl;
+        // Save friends
+        for (int i = 0; i < ptr->myfriends.size(); i++) {
+            file << codeName(ptr->myfriends[i]->f_name, ptr->myfriends[i]->l_name) << " (" 
+                 << ptr->myfriends[i]->f_name << " " << ptr->myfriends[i]->l_name << ")" << endl;
         }
 
         file << "--------------------" << endl;
-
         ptr = ptr->next;
     }
 
@@ -201,7 +242,6 @@ void Network::push_back(Person* newEntry){
 } 
 
 
-
 bool Network::remove(string fname, string lname){
     // TODO: Complete this method
     Person* traverse = head;
@@ -248,7 +288,6 @@ bool Network::remove(string fname, string lname){
     (traverse -> next)-> prev = traverse -> prev;
     delete traverse;
     return true;
-
 }
 
 // Define the wise search function
@@ -277,15 +316,9 @@ vector<Person*> Network::wiseSearch(string query) {
             continue;
         }
         
-        // Check phone (remove dashes for comparison)
-        string phone = ptr->phone->get_contact("brief");
-        string phone_clean;
-        for (char c : phone) {
-            if (c != '-') {
-                phone_clean += c;
-            }
-        }
-        if (phone_clean.find(query) != string::npos || phone.find(query) != string::npos) {
+        // Check birth year
+        string birth_year = to_string(ptr->birthdate->get_year());
+        if (birth_year.find(query) != string::npos) {
             results.push_back(ptr);
             ptr = ptr->next;
             continue;
@@ -300,9 +333,36 @@ vector<Person*> Network::wiseSearch(string query) {
             continue;
         }
         
-        // Check birth year
-        string birth_year = to_string(ptr->birthdate->get_year());
-        if (birth_year.find(query) != string::npos) {
+        // Check phone
+        string phone = ptr->phone->get_contact("brief");
+        if (phone.find(query) != string::npos) {
+            results.push_back(ptr);
+            ptr = ptr->next;
+            continue;
+        }
+        
+        // Check college
+        string college = ptr->get_college();
+        transform(college.begin(), college.end(), college.begin(), ::tolower);
+        if (!college.empty() && college.find(query) != string::npos) {
+            results.push_back(ptr);
+            ptr = ptr->next;
+            continue;
+        }
+        
+        // Check major
+        string major = ptr->get_major();
+        transform(major.begin(), major.end(), major.begin(), ::tolower);
+        if (!major.empty() && major.find(query) != string::npos) {
+            results.push_back(ptr);
+            ptr = ptr->next;
+            continue;
+        }
+        
+        // Check state
+        string state = ptr->get_state();
+        transform(state.begin(), state.end(), state.begin(), ::tolower);
+        if (!state.empty() && state.find(query) != string::npos) {
             results.push_back(ptr);
             ptr = ptr->next;
             continue;
@@ -313,7 +373,6 @@ vector<Person*> Network::wiseSearch(string query) {
     
     return results;
 }
-
 
 void Network::showMenu(){
     // TODO: Complete this method!
@@ -513,13 +572,11 @@ void Network::showMenu(){
             else{
                 cout << endl<<"Person not found\n";
             }
-
-
         }
         else if (opt==7){
             // Smart search - new option
             cout << "Smart Search\n";
-            cout << "Enter search term (name, phone, email, etc.): ";
+            cout << "Enter search term (name, phone, email, college, major, state, etc.): ";
             string query;
             getline(cin, query);
             
