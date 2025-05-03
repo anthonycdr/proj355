@@ -1,82 +1,5 @@
-#include "network.h"
-#include <limits>
-#include "misc.h"
-#include <fstream>
-#include <vector>
-#include <iostream>
-#include <regex>
-#include <cstdlib> 
-#include <algorithm>
-
-using namespace std;
-
-Network::Network(){
-    head = NULL;
-    tail = NULL;
-    count = 0;
-}
-
-
-Network::Network(string fileName){
-    // TODO: complete this method!
-    // Implement it in one single line!
-    // You may need to implement the load method before this!
-    loadDB(fileName);
-
-}
-
-Network::~Network(){ 
-	Person* current = head;
-        while (current!=nullptr){
-            Person* temp = current;
-            current = current -> next;
-            delete temp;
-            }
-        head = nullptr;
-        tail = nullptr;
-        count = 0;
-}
-
-Person* Network::search(Person* searchEntry){
-    // Searches the Network for searchEntry
-    // if found, returns a pointer to it, else returns NULL
-    // TODO: Complete this method
-    Person* traverse = head;
-    if (head==nullptr){
-        return nullptr;
-    }
-    while (*traverse!=*searchEntry){
-        traverse = traverse->next;
-        if (traverse == nullptr){
-            return nullptr;
-        }
-    }
-    return traverse;
-
-}
-
-
-Person* Network::search(string fname, string lname){
-    // New == for Person, only based on fname and lname
-    // if found, returns a pointer to it, else returns NULL
-    // TODO: Complete this method
-    // Note: two ways to implement this, 1st making a new Person with fname and lname and and using search(Person*), 2nd using fname and lname directly. 
-    Person* traverse = head;
-    if (head==nullptr){
-        return nullptr;
-    }
-    while (traverse->f_name!=fname || traverse->l_name!=lname){
-        traverse = traverse->next;
-        if (traverse == nullptr){
-            return nullptr;
-        }
-    }
-    return traverse;
-}
-
-
+// Updated loadDB method to handle new contact types
 void Network::loadDB(string filename){
-    // Modified to handle additional fields
     std::ifstream file(filename);
     if (!file.is_open()) {
         cout << "Could not open the file!" << endl;
@@ -154,6 +77,7 @@ void Network::loadDB(string filename){
     }
 }
 
+// Updated saveDB method to save contact types
 void Network::saveDB(string filename) {
     ofstream file(filename);
     if (!file.is_open()) {
@@ -172,14 +96,14 @@ void Network::saveDB(string filename) {
         file << ptr->email->get_contact("full") << endl;
         
         // Save the additional fields if not empty
-        if (!ptr->get_college().empty()) {
-            file << "College: " << ptr->get_college() << endl;
+        if (ptr->college->get_contact("brief") != "") {
+            file << "College: " << ptr->college->get_contact("brief") << endl;
         }
-        if (!ptr->get_major().empty()) {
-            file << "Major: " << ptr->get_major() << endl;
+        if (ptr->major->get_contact("brief") != "") {
+            file << "Major: " << ptr->major->get_contact("brief") << endl;
         }
-        if (!ptr->get_state().empty()) {
-            file << "State: " << ptr->get_state() << endl;
+        if (ptr->state->get_contact("brief") != "") {
+            file << "State: " << ptr->state->get_contact("brief") << endl;
         }
 
         // Save friends
@@ -195,102 +119,7 @@ void Network::saveDB(string filename) {
     file.close();
 }
 
-
-void Network::printDB(){
-    // Leave me alone! I know how to print! 
-    // Note: Notice that we don't need to update this even after adding to Personattributes
-    // This is a feature of OOP, classes are supposed to take care of themselves!
-    cout << "Number of people: " << count << endl;
-    cout << "------------------------------" << endl;
-    Person* ptr = head;
-    while(ptr != NULL){
-        ptr->print_person();
-        cout << "------------------------------" << endl;
-        ptr = ptr->next;
-    }
-}
-
-
-
-void Network::push_front(Person* newEntry){
-    newEntry->prev = NULL;
-    newEntry->next = head;
-
-    if (head != NULL)
-        head->prev = newEntry;
-    else
-        tail = newEntry;
-    
-    head = newEntry;
-    count++;
-}
-
-
-void Network::push_back(Person* newEntry){
-    // Adds a new Person (newEntry) to the back of LL
-    // TODO: Complete this method
-    newEntry->next = NULL;
-    newEntry->prev = tail;
-
-    if (tail != NULL)
-        tail->next = newEntry;
-    else
-        head = newEntry;
-
-    tail = newEntry;
-    count++;
-} 
-
-
-bool Network::remove(string fname, string lname){
-    // TODO: Complete this method
-    Person* traverse = head;
-    if (head==nullptr){
-        return false;
-    }
-    while (traverse->f_name!=fname || traverse->l_name!=lname){
-        traverse = traverse->next;
-        if (traverse == nullptr){
-            return false;
-        }
-    }
-    Person* individual = head; //removing the selected individual from others friend vector
-    for (int i = 0; i<count;i++){
-        for (int j = 0; j<individual->myfriends.size(); j++){
-            if (individual->myfriends[j]==traverse){
-                individual->myfriends.erase(individual->myfriends.begin()+j);
-                break;
-            }
-        }
-        individual = individual->next;
-    }
-
-
-    if (traverse -> next == nullptr){ //deleting last element
-        if (traverse -> prev == nullptr){ //if only one elem
-            head = nullptr;
-            tail = nullptr;
-            delete traverse;
-            return true;
-        }
-        ((traverse ->prev)->next) = nullptr;
-        tail = traverse-> prev;
-        delete traverse;
-        return true;
-    }
-    if (traverse == head){ //for deleting head
-        head = traverse -> next;
-        head->prev = nullptr;
-        delete traverse;
-        return true;
-    }
-    (traverse -> prev)->next = traverse -> next;
-    (traverse -> next)-> prev = traverse -> prev;
-    delete traverse;
-    return true;
-}
-
-// Define the wise search function
+// Updated wiseSearch to use contact types
 vector<Person*> Network::wiseSearch(string query) {
     vector<Person*> results;
     // Convert query to lowercase for case-insensitive search
@@ -316,14 +145,6 @@ vector<Person*> Network::wiseSearch(string query) {
             continue;
         }
         
-        // Check birth year
-        string birth_year = to_string(ptr->birthdate->get_year());
-        if (birth_year.find(query) != string::npos) {
-            results.push_back(ptr);
-            ptr = ptr->next;
-            continue;
-        }
-        
         // Check email
         string email = ptr->email->get_contact("brief");
         transform(email.begin(), email.end(), email.begin(), ::tolower);
@@ -342,7 +163,7 @@ vector<Person*> Network::wiseSearch(string query) {
         }
         
         // Check college
-        string college = ptr->get_college();
+        string college = ptr->college->get_contact("brief");
         transform(college.begin(), college.end(), college.begin(), ::tolower);
         if (!college.empty() && college.find(query) != string::npos) {
             results.push_back(ptr);
@@ -351,7 +172,7 @@ vector<Person*> Network::wiseSearch(string query) {
         }
         
         // Check major
-        string major = ptr->get_major();
+        string major = ptr->major->get_contact("brief");
         transform(major.begin(), major.end(), major.begin(), ::tolower);
         if (!major.empty() && major.find(query) != string::npos) {
             results.push_back(ptr);
@@ -360,7 +181,7 @@ vector<Person*> Network::wiseSearch(string query) {
         }
         
         // Check state
-        string state = ptr->get_state();
+        string state = ptr->state->get_contact("brief");
         transform(state.begin(), state.end(), state.begin(), ::tolower);
         if (!state.empty() && state.find(query) != string::npos) {
             results.push_back(ptr);
@@ -374,241 +195,22 @@ vector<Person*> Network::wiseSearch(string query) {
     return results;
 }
 
-void Network::showMenu(){
-    // TODO: Complete this method!
-    // All the prompts are given to you, 
-    // You should add code before, between and after prompts!
-
-    int opt;
-    while(1){
-        cout << "\033[2J\033[1;1H";
-        printMe("banner"); // from misc library
-
-        cout << "Select from below: \n";
-        cout << "1. Save network database \n";
-        cout << "2. Load network database \n";
-        cout << "3. Add a new person \n";
-        cout << "4. Remove a person \n";
-        cout << "5. Print people with last name  \n";
-        cout << "6. Connect \n";
-        cout << "7. Smart search \n";  // New menu option
-        cout << "\nSelect an option ... ";
-        
-        if (cin >> opt) {
-            cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        } else {
-            cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            cout << "Wrong option! " << endl;
-            return;
+// Updated code for option 5 (Print people with last name)
+else if (opt==5){
+    cout << "Print people with last name \n";
+    cout << "Last name: ";
+    string la_name1;
+    getline(cin,la_name1);
+    bool found = false;
+    Person* traverse = head;
+    while(traverse != NULL){
+        if (traverse->l_name == la_name1){
+            traverse->print_person(); // This will now print all contact info including college, major, state
+            cout << "--------------------" << endl;
+            found = true;
         }
-        
-        // You may need these variables! Add more if you want!
-        string fname, lname, fileName, bdate;
-        cout << "\033[2J\033[1;1H";
-
-        if (opt==1){
-            // TODO: Complete me!
-            cout << "Saving network database \n";
-            cout << "Enter the name of the save file: ";
-            // Save the network database into the file with the given name,
-            // with each person saved in the format the save as printing out the person info,
-            // and people are delimited similar to "networkDB.txt" format
-            getline(cin, fileName);
-            saveDB(fileName);
-            ofstream check(fileName);
-            if (check.is_open()) {
-            	check.close();
-                saveDB(fileName);
-    		cout << "Network saved in " << fileName << endl;
-} 		
-	     else {
-    		 cout << "Could not open the file: " << fileName << endl;
-	}
-           
-        }
-        else if (opt==2){
-        	Person* current = head; // loading should erase all elements of current LL
-        	while (current!=nullptr){
-            		Person* temp = current;
-            		current = current -> next;
-            		delete temp;
-            	}
-        	head = nullptr;
-        	tail = nullptr;
-        	count = 0;
-            // TODO: Complete me!
-            cout << "Loading network database \n";
-            // TODO: print all the files in this same directory that have "networkDB.txt" format
-            system("ls > file_list.txt");
-            ifstream infile("file_list.txt");
-            regex match (".+\\.txt$");
-            string file;
-            while (getline (infile, file)){
-            	if (file == "file_list.txt"){
-            		continue;
-            		}
-            	if (regex_match(file, match)){
-            	cout << file << endl;  
-            	}
-            }
-            system("rm file_list.txt");
-            infile.close();
-            
-            // print format: one filename one line.
-            // This step just shows all the available .txt file to load.
-            string filename;
-            cout << "Enter the name of the load file: "; 
-            cin >> filename;
-            // If file with name FILENAME does not exist: 
-            if (!(ifstream(filename))){
-                cout << "File " << filename << " does not exist!" << endl;
-            }
-            else{
-            	loadDB(filename);
-                    // If file is loaded successfully, also print the count of people in it: 
-                cout << "Network loaded from " << filename << " with " << count << " people \n";
-            }
-        }
-        else if (opt == 3){
-            // TODO: Complete me!
-            // TODO: use push_front, and not push_back 
-            // Add a new Person ONLY if it does not exists!
-            cout << "Adding a new person \n";
-
-            Person* newp = new Person();
-
-            Person* exists = search(newp);
-            if (exists != NULL){
-                delete newp;
-            }
-            else {
-                push_front(newp); 
-            }
-        }
-        else if (opt == 4){
-            // TODO: Complete me!
-            // if found, cout << "Remove Successful! \n";
-            // if not found: cout << "Person not found! \n";
-            string fi_name, la_name;
-            cout << "Enter the first name to remove: " << endl;
-            getline(cin, fi_name);
-	        cout << "Enter the last name to remove: " << endl;
-	        getline(cin, la_name);
-            bool result = remove (fi_name, la_name);
-            if (result){
-                cout << "Remove Successful! \n";
-                cout << "Removing a person \n";
-                cout << "First name: " << fi_name << endl;
-                cout << "Last name: " << la_name << endl;
-            }
-            else{
-                cout << "Person not found! \n";
-            }
-        }
-        else if (opt==5){
-            // TODO: Complete me!
-            // print the people with the given last name
-            // if not found: cout << "Person not found! \n";
-            cout << "Print people with last name \n";
-            cout << "Last name: ";
-            string la_name1;
-            getline(cin,la_name1);
-
-            bool found = false;
-            Person* traverse = head;
-            while(traverse != NULL){
-                if (traverse->l_name == la_name1){
-                    cout << traverse->f_name << endl;
-                    cout << traverse->l_name << endl;
-                    cout << traverse->birthdate->get_month() << "/" << traverse->birthdate->get_day() << "/" << traverse->birthdate->get_year() <<endl;
-                    cout << traverse->email->get_contact() << endl;
-                    cout << traverse -> phone->get_contact()<<endl;
-                    cout << "--------------------" << endl;
-                    found = true;
-                }
-                traverse = traverse->next;
-            }
-            if (found == false)
-                cout << "Person not found! \n";
-
-        }
-
-        else if (opt==6){
-            cout <<"Make friends:\n";
-            cout <<"Person 1\n";
-            cout << "First Name: ";
-            string first, last;
-            getline (cin, first);
-            cout << "Last Name: ";
-            getline (cin, last);
-            Person* Person1 = search (first, last);
-            if (Person1){
-                cout << "Person 2\n";
-                cout << "First Name: ";
-                getline (cin, first);
-                cout << "Last Name: ";
-                getline (cin, last);
-                Person* Person2 = search (first, last);
-                if (Person2){
-                    cout << endl << Person1->l_name << ", " << Person1->f_name << endl;
-                    cout << Person1->birthdate->get_month_name() << " " << Person1->birthdate->get_day() << ", " << Person1->birthdate->get_year() << endl;
-                    cout << "Phone " << Person1->phone->get_contact() << endl;
-                    cout << "Email " << Person1->email->get_contact() << endl;
-                    cout << endl;
-                    cout << endl << Person2->l_name << ", " << Person2->f_name << endl;
-                    cout << Person2->birthdate->get_month_name() << " " << Person2->birthdate->get_day() << ", " << Person2->birthdate->get_year() << endl;
-                    cout << "Phone " << Person2->phone->get_contact() << endl;
-                    cout << "Email " << Person2->email->get_contact() << endl;
-                    Person1->makeFriend(Person2);
-                    Person2->makeFriend(Person1);
-                }
-                else{
-                    cout << endl << "Person not found\n";
-                }
-
-            }
-            else{
-                cout << endl<<"Person not found\n";
-            }
-        }
-        else if (opt==7){
-            // Smart search - new option
-            cout << "Smart Search\n";
-            cout << "Enter search term (name, phone, email, college, major, state, etc.): ";
-            string query;
-            getline(cin, query);
-            
-            vector<Person*> results = wiseSearch(query);
-            
-            if (results.empty()) {
-                cout << "No results found for \"" << query << "\"" << endl;
-            } else {
-                cout << "Found " << results.size() << " results for \"" << query << "\":" << endl;
-                cout << "-----------------------------------------" << endl;
-                
-                for (Person* p : results) {
-                    p->print_person();
-                    cout << "-----------------------------------------" << endl;
-                }
-            }
-        }
-        else
-            cout << "Nothing matched!\n";
-        
-        cin.clear();
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        cout << "\n\nPress Enter key to go back to main menu ... ";
-        string temp;
-        std::getline (std::cin, temp);
-        cout << "\033[2J\033[1;1H";
+        traverse = traverse->next;
     }
-}
-
-// Add the main function at the end of this file
-int main() {
-    Network myNetwork;
-    myNetwork.showMenu();
-    return 0;
+    if (found == false)
+        cout << "Person not found! \n";
 }
