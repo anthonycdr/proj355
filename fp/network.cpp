@@ -172,16 +172,10 @@ void Network::saveDB(string filename) {
         file << ptr->email->get_contact("full") << endl;
         
         // Save the additional fields if not empty
-        if (ptr->college->get_contact("brief") != "") {
-            file << "College: " << ptr->college->get_contact("brief") << endl;
-        }
-        if (ptr->major->get_contact("brief") != "") {
-            file << "Major: " << ptr->major->get_contact("brief") << endl;
-        }
-        if (ptr->state->get_contact("brief") != "") {
-            file << "State: " << ptr->state->get_contact("brief") << endl;
-        }
-
+        file << ptr->college->get_contact("brief") << endl;
+        file << ptr->major->get_contact("brief") << endl;
+        file << ptr->state->get_contact("brief") << endl;
+	    
         // Save friends
         for (int i = 0; i < ptr->myfriends.size(); i++) {
             file << codeName(ptr->myfriends[i]->f_name, ptr->myfriends[i]->l_name) << " (" 
