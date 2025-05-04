@@ -74,7 +74,7 @@ string College::get_contact(string style){
 }
 
 void College::print(){
-	cout << "College: " << get_contact() << endl;
+	cout << get_contact() << endl;
 }
 
 // Major implementation
@@ -93,7 +93,7 @@ string Major::get_contact(string style){
 }
 
 void Major::print(){
-	cout << "Major: " << get_contact() << endl;
+	cout << get_contact() << endl;
 }
 
 // State implementation
@@ -111,5 +111,5 @@ string State::get_contact(string style){
 }
 
 void State::print(){
-	cout << "State: " << get_contact() << endl;
+	cout << get_contact() << endl;
 }
