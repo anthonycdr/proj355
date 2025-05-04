@@ -225,15 +225,12 @@ void Person::print_person(){
     email->print();
     
     // Print additional fields if they are not empty
-    if (college->get_contact("brief") != "") {
-        college->print();
-    }
-    if (major->get_contact("brief") != "") {
-        major->print();
-    }
-    if (state->get_contact("brief") != "") {
-        state->print();
-    }
+    cout << "College ";
+    college->print();
+    cout << "Major ";
+    major->print();
+    cout << "State ";
+    state->print();
     
     for (int i = 0; i < myfriends.size(); i++){
         cout << codeName(myfriends[i]->f_name, myfriends[i]->l_name) << " (" << myfriends[i]->f_name << " " << myfriends[i]->l_name << ")" << endl;
